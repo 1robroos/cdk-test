@@ -1,0 +1,103 @@
+trigger:
+  branches:
+    include:
+      - feature/*
+      - dev
+      - master
+# startpunt voor je pipeline. The trigger section specifies that the pipeline will be triggered by changes to branch dev or any branch that starts with feature/ .
+
+# pr:
+#   - dev
+
+variables:
+  system.debug: 'false'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+
+- task: NodeTool@0
+  inputs:
+    versionSpec: '22.0.0'
+
+- script: |
+    echo "Installing packages"
+    sudo npm install -g aws-cdk
+    sudo gem install cfn-nag  
+    pip install -r requirements.txt  # otherwise error: ModuleNotFoundError: No module named 'aws_cdk'
+  displayName: 'Installing aws cdk and cfn nag'
+
+
+- task: AWSCLI@1
+  inputs:
+    awsCredentials: 'my-aws-account'
+    regionName: 'eu-central-1'
+    awsCommand: 'sts'
+    awsSubCommand: 'get-caller-identity'
+  displayName: 'aws sts'
+
+# Testing construct with pytest
+# https://docs.aws.amazon.com/cdk/v2/guide/testing.html
+# https://docs.pytest.org/en/6.2.x/getting-started.html#install-pytest 
+
+# - script: |
+#     echo "Testing construct with pytest"
+#     pip install -r requirements.txt # to prevent ModuleNotFoundError: No module named 'aws_cdk'
+#     pip install -U pytest
+#     python -m pytest
+#   displayName: 'Testing construct with pytest'
+
+- task: AWSShellScript@1
+  inputs:
+    awsCredentials: 'my-aws-account'
+    regionName: 'eu-central-1'
+    scriptType: 'inline'
+    inlineScript: |
+      echo "Running validations"
+      cdk synth -o out
+      cd out
+      fname=$(find *.template.json)
+      echo "Testing output in subdir out with cfn-nag-scan"
+      cfn_nag_scan --input-path $fname
+  displayName: 'Validating with cfn_nag'
+
+- task: AWSCLI@1
+  inputs:
+    awsCredentials: 'my-aws-account'
+    regionName: 'eu-central-1'
+    awsCommand: 'cloudformation'
+    awsSubCommand: 'list-stacks'
+  displayName: 'aws cli list cfn stacks'
+
+- task: AWSShellScript@1
+  inputs:
+    awsCredentials: 'my-aws-account'
+    regionName: 'eu-central-1'
+    scriptType: 'inline'
+    inlineScript: |
+      echo "cdk synth to generate cdk.out dir"
+      cdk synth
+  displayName: 'cdk synthesize'
+
+- task: AWSShellScript@1
+  inputs:
+    awsCredentials: 'my-aws-account'
+    regionName: 'eu-central-1'
+    scriptType: 'inline'
+    inlineScript: |
+      # echo "cdk diff without arguments"
+      # cdk diff
+      echo "Generating CDK diff file"
+      cdk diff -o out -c aws-cdk:enableDiffNoFail=true --no-color "*" 2>&1 | sed -n '/Resources/,/Outputs/p' | sed 's/├/\+/g; s/│/|/g; s/─/-/g; s/└/`/g' | head -n -1 | tee output.log
+      # sed -i '1 i\```bash' output.log
+      # sed -i -e '$a```' output.log
+      # cat output.log
+  displayName: 'Generating CDK diff file'
+
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: $(System.DefaultWorkingDirectory)
+    artifactName: cdk-arti
+
