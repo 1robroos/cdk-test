@@ -29,14 +29,14 @@ steps:
     pip install -r requirements.txt  # otherwise error: ModuleNotFoundError: No module named 'aws_cdk'
   displayName: 'Installing aws cdk and cfn nag'
 
-
-- task: AWSCLI@1
-  inputs:
-    awsCredentials: 'MyServConn969526043371'
-    regionName: 'eu-central-1'
-    awsCommand: 'sts'
-    awsSubCommand: 'get-caller-identity'
-  displayName: 'aws sts'
+# next task will give : ##[error]AccessDenied: User: arn:aws:iam::969526043371:user/AzureDevOpsUser/azdp_lab is not authorized to perform: sts:AssumeRole on resource: ***
+# - task: AWSCLI@1
+#   inputs:
+#     awsCredentials: 'MyServConn969526043371'
+#     regionName: 'eu-central-1'
+#     awsCommand: 'sts'
+#     awsSubCommand: 'get-caller-identity'
+#   displayName: 'aws sts'
 
 # Testing construct with pytest
 # https://docs.aws.amazon.com/cdk/v2/guide/testing.html
