@@ -33,7 +33,7 @@ steps:
 # - task: AWSCLI@1
 #   inputs:
 #     awsCredentials: 'MyServConn969526043371'
-#     regionName: 'eu-central-1'
+#     regionName: 'us-east-1'
 #     awsCommand: 'sts'
 #     awsSubCommand: 'get-caller-identity'
 #   displayName: 'aws sts'
@@ -52,7 +52,7 @@ steps:
 - task: AWSShellScript@1
   inputs:
     awsCredentials: 'MyServConn969526043371'
-    regionName: 'eu-central-1'
+    regionName: 'us-east-1'
     scriptType: 'inline'
     inlineScript: |
       cd cdk-code
@@ -67,7 +67,7 @@ steps:
 - task: AWSCLI@1
   inputs:
     awsCredentials: 'MyServConn969526043371'
-    regionName: 'eu-central-1'
+    regionName: 'us-east-1'
     awsCommand: 'cloudformation'
     awsSubCommand: 'list-stacks'
   displayName: 'aws cli list cfn stacks'
@@ -75,7 +75,7 @@ steps:
 - task: AWSShellScript@1
   inputs:
     awsCredentials: 'MyServConn969526043371'
-    regionName: 'eu-central-1'
+    regionName: 'us-east-1'
     scriptType: 'inline'
     inlineScript: |
       echo "cdk synth to generate cdk.out dir"
@@ -86,7 +86,7 @@ steps:
 - task: AWSShellScript@1
   inputs:
     awsCredentials: 'MyServConn969526043371'
-    regionName: 'eu-central-1'
+    regionName: 'us-east-1'
     scriptType: 'inline'
     inlineScript: |
       # echo "cdk diff without arguments"
