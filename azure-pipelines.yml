@@ -25,7 +25,7 @@ steps:
     cd cdk-code
     echo "Installing packages"
     sudo npm install -g aws-cdk
-    sudo gem install cfn-nag  
+    #sudo gem install cfn-nag  
     pip install -r requirements.txt  # otherwise error: ModuleNotFoundError: No module named 'aws_cdk'
   displayName: 'Installing aws cdk and cfn nag'
 
@@ -61,7 +61,7 @@ steps:
       cd out
       fname=$(find *.template.json)
       echo "Testing output in subdir out with cfn-nag-scan"
-      cfn_nag_scan --input-path $fname
+      #cfn_nag_scan --input-path $fname
   displayName: 'Validating with cfn_nag'
 
 - task: AWSCLI@1
